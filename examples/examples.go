@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	t, err := tourniquet.NewTourniquet(newConnection, 3, time.Second)
+	t, err := tourniquet.NewPool(newConnection, 3, time.Second)
 	if err != nil {
 		log.Fatal(err)
 	}

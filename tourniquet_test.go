@@ -13,7 +13,7 @@ import (
 
 func Test_Tourniquet(t *testing.T) {
 	size := 3
-	tourniquet, err := NewTourniquet(func() (*grpc.ClientConn, error) {
+	tourniquet, err := NewPool(func() (*grpc.ClientConn, error) {
 		return &grpc.ClientConn{}, nil
 	}, size, time.Second)
 	require.NoError(t, err)
@@ -32,14 +32,13 @@ func Test_Tourniquet(t *testing.T) {
 	require.Error(t, err)
 
 	tourniquet.Free(local[0])
-	local = local[1:]
 	conn, err := tourniquet.Get(context.Background())
 	require.NoError(t, err)
 	assert.NotNil(t, conn.ClientConn)
 }
 
 func Test_Tourniquet_Recreate(t *testing.T) {
-	tourniquet, err := NewTourniquet(func() (*grpc.ClientConn, error) {
+	tourniquet, err := NewPool(func() (*grpc.ClientConn, error) {
 		return &grpc.ClientConn{}, nil
 	}, 1, time.Nanosecond)
 	require.NoError(t, err)
