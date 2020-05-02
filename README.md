@@ -1,6 +1,6 @@
 # Tourniquet
 
-Tourniquet manages a pool of gRPC connections to handle gRPC client-side load-balancing in Go.
+Tourniquet manages a thread-safe pool of gRPC connections to handle gRPC client-side load-balancing in Go.
 
 It does not rely on DNS as it may cause many problems in Kubernetes. Especially in the event of scaling the number of replicas.
 
