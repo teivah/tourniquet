@@ -6,4 +6,4 @@ It does not rely on DNS as it may cause many problems in Kubernetes. Especially 
 
 The principle is to set a desired pool size a TTL for each connection. Once the TTL is reached, it will force to recreate a connection.
 
-It allows handling gRPC load-balancing and discoverability.
+It allows handling gRPC load-balancing and discoverability [without tears and without a service mesh](https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/).
