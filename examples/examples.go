@@ -43,7 +43,7 @@ func main() {
 
 			// If we get an error while using the connection, we may want to recreate one
 			// conn.ClientConn.Close()
-			// conn, err = t.Recreate()
+			// err = t.Recreate()
 
 			wg.Done()
 		}()
