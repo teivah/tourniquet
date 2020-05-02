@@ -48,7 +48,14 @@ func (t *Pool) Get(ctx context.Context) (Connection, error) {
 		return Connection{}, ctx.Err()
 	case conn := <-t.pool:
 		if time.Since(conn.t) > t.ttl {
-			return t.Recreate()
+			conn, err := t.connFactory()
+			if err != nil {
+				return Connection{}, err
+			}
+			return Connection{
+				ClientConn: conn,
+				t:          time.Now(),
+			}, err
 		}
 		return conn, nil
 	}
@@ -60,13 +67,14 @@ func (t *Pool) Free(conn Connection) {
 }
 
 // Recreate recreates a connection.
-func (t *Pool) Recreate() (Connection, error) {
+func (t *Pool) Recreate() error {
 	conn, err := t.connFactory()
 	if err != nil {
-		return Connection{}, err
+		return err
 	}
-	return Connection{
+	t.Free(Connection{
 		ClientConn: conn,
 		t:          time.Now(),
-	}, err
+	})
+	return nil
 }
