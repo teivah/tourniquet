@@ -48,6 +48,11 @@ func (t *Pool) Get(ctx context.Context) (Connection, error) {
 		return Connection{}, ctx.Err()
 	case conn := <-t.pool:
 		if time.Since(conn.t) > t.ttl {
+			err := conn.ClientConn.Close()
+			if err != nil {
+				return Connection{}, err
+			}
+
 			conn, err := t.connFactory()
 			if err != nil {
 				return Connection{}, err
