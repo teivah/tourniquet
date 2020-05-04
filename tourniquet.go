@@ -50,22 +50,23 @@ func (t *Pool) Get(ctx context.Context) (Connection, error) {
 	case <-ctx.Done():
 		return Connection{}, ctx.Err()
 	case conn := <-t.pool:
-		if time.Since(conn.t) > t.ttl {
-			err := conn.ClientConn.Close()
-			if err != nil {
-				return Connection{}, err
-			}
-
-			conn, err := t.connFactory()
-			if err != nil {
-				return Connection{}, err
-			}
-			return Connection{
-				ClientConn: conn,
-				t:          time.Now(),
-			}, err
+		if time.Since(conn.t) <= t.ttl {
+			return conn, nil
 		}
-		return conn, nil
+
+		err := conn.ClientConn.Close()
+		if err != nil {
+			return Connection{}, err
+		}
+
+		clientConn, err := t.connFactory()
+		if err != nil {
+			return Connection{}, err
+		}
+		return Connection{
+			ClientConn: clientConn,
+			t:          time.Now(),
+		}, err
 	}
 }
 
