@@ -26,6 +26,9 @@ func NewPool(connFactory func() (*grpc.ClientConn, error), desiredPoolSize int, 
 	for i := 0; i < desiredPoolSize; i++ {
 		conn, err := connFactory()
 		if err != nil {
+			for j := 0; j < i; j++ {
+				_ = (<-pool).ClientConn.Close()
+			}
 			return nil, err
 		}
 		pool <- Connection{
