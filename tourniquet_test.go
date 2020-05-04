@@ -36,14 +36,3 @@ func Test_Tourniquet(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, conn.ClientConn)
 }
-
-func Test_Tourniquet_Recreate(t *testing.T) {
-	tourniquet, err := NewPool(func() (*grpc.ClientConn, error) {
-		return &grpc.ClientConn{}, nil
-	}, 1, time.Nanosecond)
-	require.NoError(t, err)
-	time.Sleep(time.Millisecond)
-	conn, err := tourniquet.Get(context.Background())
-	require.NoError(t, err)
-	assert.NotNil(t, conn.ClientConn)
-}
