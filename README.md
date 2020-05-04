@@ -1,9 +1,7 @@
 # Tourniquet
 
-Tourniquet manages a thread-safe pool of gRPC connections to handle gRPC client-side load-balancing in Go.
+gRPC load-balancing on Kubernetes can be painful: https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/
 
-It does not rely on DNS as it may cause some problems with Kubernetes. Especially in the event of scaling the number of replicas.
+Instead of having to rely on a service-mesh, a cheap alternative is to manage client-side load balancing. In Kubernetes, we have to configure a Service on top of a Pod. Then, with Tourniquet we can create a pool of gRPC connections and a max TTL. Each connection created is associated to the TTL specified. Once the TTL is reached, the stale connection will be closed and recreated. It allows querying again the service and potentially _discover_ new replica instances.   
 
-The principle is to set a desired pool size a TTL for each connection. Once the TTL is reached, it will force to recreate a connection.
-
-It allows handling gRPC load-balancing and discoverability [without tears and without a service mesh](https://kubernetes.io/blog/2018/11/07/grpc-load-balancing-on-kubernetes-without-tears/).
+This is a cheap and race-safe solution to handle gRPC load balancing on Kubernetes.
