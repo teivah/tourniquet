@@ -69,12 +69,14 @@ func (t *Pool) Get(ctx context.Context) (Connection, error) {
 	}
 }
 
-// Free frees a connection.
+// Free frees a connection by putting it back to the pool.
 func (t *Pool) Free(conn Connection) {
 	t.pool <- conn
 }
 
 // Recreate recreates a connection.
+// It should only be used when we failed using a connection.
+// Instead of putting back in the pool a stale connection, we recreate one.
 func (t *Pool) Recreate() error {
 	conn, err := t.connFactory()
 	if err != nil {
