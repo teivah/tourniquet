@@ -9,9 +9,10 @@ import (
 
 // Pool is the main pool structure.
 type Pool struct {
-	connFactory func() (*grpc.ClientConn, error)
-	pool        chan Connection
-	ttl         time.Duration
+	connFactory               func() (*grpc.ClientConn, error)
+	pool                      chan Connection
+	ttl                       time.Duration
+	customErrorOnCloseHandler func(error)
 }
 
 // Connection wraps a gRPC connection.
@@ -21,7 +22,7 @@ type Connection struct {
 }
 
 // NewPool creates a pool of gRPC connections.
-func NewPool(connFactory func() (*grpc.ClientConn, error), desiredPoolSize int, ttl time.Duration) (*Pool, error) {
+func NewPool(connFactory func() (*grpc.ClientConn, error), desiredPoolSize int, ttl time.Duration, opts ...Option) (*Pool, error) {
 	pool := make(chan Connection, desiredPoolSize)
 	for i := 0; i < desiredPoolSize; i++ {
 		conn, err := connFactory()
@@ -37,10 +38,12 @@ func NewPool(connFactory func() (*grpc.ClientConn, error), desiredPoolSize int, 
 		}
 	}
 
+	option := parseOptions(opts...)
 	return &Pool{
-		connFactory: connFactory,
-		pool:        pool,
-		ttl:         ttl,
+		connFactory:               connFactory,
+		pool:                      pool,
+		ttl:                       ttl,
+		customErrorOnCloseHandler: option.withCustomErrorOnCloseHandler(),
 	}, nil
 }
 
@@ -56,7 +59,10 @@ func (t *Pool) Get(ctx context.Context) (Connection, error) {
 
 		err := conn.ClientConn.Close()
 		if err != nil {
-			return Connection{}, err
+			if t.customErrorOnCloseHandler == nil {
+				return Connection{}, err
+			}
+			t.customErrorOnCloseHandler(err)
 		}
 
 		clientConn, err := t.connFactory()
